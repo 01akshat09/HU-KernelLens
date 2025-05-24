@@ -265,6 +265,7 @@ class UserMonitor:
         self.user_bpf = None
         self.user_activity_events = []
         # Ensure logger is set up if not globally
+        self.SUSPICIOUS_PATTERNS = [r"/root", r"/etc", r"/boot", r"/proc", r"/sys",r"rm\s+-rf\s+/", r"chmod\s+777", r"chown\s+root", r"/etc/passwd",r"ncat", r"nc", r"tcpdump", r"curl", r"wget", r"python.*http\.server"]
         self.logger = logging.getLogger(__name__)
         if not self.logger.handlers: # Avoid duplicate handlers if run multiple times
             logging.basicConfig(level=logging.INFO)
@@ -298,7 +299,8 @@ class UserMonitor:
     @staticmethod
     def _decode_c_char_array(c_char_arr, max_len):
         try:
-            raw_bytes = c_char_arr.value
+            # raw_bytes = c_char_arr.value
+            raw_bytes = bytes(c_char_arr)
             try:
                 nul_index = raw_bytes.index(b'\x00')
                 decodable_bytes = raw_bytes[:nul_index]
@@ -347,7 +349,7 @@ class UserMonitor:
                 "uid": event.uid,
                 "comm": comm_str,
                 "args": arg_line,
-                "suspicious": any(re.search(pattern, arg_line, re.IGNORECASE) for pattern in SUSPICIOUS_PATTERNS)
+                "suspicious": any(re.search(pattern, arg_line, re.IGNORECASE) for pattern in self.SUSPICIOUS_PATTERNS)
             })
         except Exception as e:
             self.logger.error(f"Error handling user activity event: {e}")

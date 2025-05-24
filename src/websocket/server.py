@@ -4,12 +4,13 @@ import json
 from src.notifications.email import send_email_alert
 
 class WebSocketServer:
-    def __init__(self, cpu_monitor, network_monitor, user_monitor, priv_monitor):
+    def __init__(self, cpu_monitor, network_monitor, user_monitor, priv_monitor, process_monitor):
         self.connected_clients = set()
         self.cpu_monitor = cpu_monitor
         self.network_monitor = network_monitor
         self.user_monitor = user_monitor
         self.priv_monitor = priv_monitor
+        self.process_monitor = process_monitor
 
     async def handler(self, websocket):
         """Handle WebSocket client connections."""
@@ -23,7 +24,8 @@ class WebSocketServer:
                     "cpuAlarms": self.cpu_monitor.cpu_alarms,
                     "networkPackets": self.network_monitor.collect_data(),
                     "userActivity": self.user_monitor.collect_data(),
-                    "privilegedEvents": self.priv_monitor.collect_data()
+                    "privilegedEvents": self.priv_monitor.collect_data(),
+                    "processEvents": self.process_monitor.collect_data()
                 }
                 if data["cpuAlarms"]:
                     send_email_alert(data["cpuAlarms"])
@@ -42,6 +44,7 @@ class WebSocketServer:
                 self.network_monitor.network_bpf.perf_buffer_poll(timeout=100)
                 self.user_monitor.user_bpf.perf_buffer_poll(timeout=100)
                 self.priv_monitor.priv_bpf.perf_buffer_poll(timeout=100)
+                self.process_monitor.process_bpf.perf_buffer_poll(timeout=100)
                 await asyncio.sleep(0.1)
 
 async def start_websocket_server():
@@ -50,13 +53,15 @@ async def start_websocket_server():
     from src.network_monitor.network_monitor import init_network_monitor
     from src.user_monitor.user_monitor import init_user_monitor
     from src.priv_monitor.priv_monitor import init_priv_monitor
+    from src.process_monitor.process_monitor import init_process_monitor
 
     cpu_monitor = init_cpu_monitor()
     network_monitor = init_network_monitor()
     user_monitor = init_user_monitor()
     priv_monitor = init_priv_monitor()
+    process_monitor = init_process_monitor()
 
-    server = WebSocketServer(cpu_monitor, network_monitor, user_monitor, priv_monitor)
+    server = WebSocketServer(cpu_monitor, network_monitor, user_monitor, priv_monitor, process_monitor)
     await server.run()
 
 

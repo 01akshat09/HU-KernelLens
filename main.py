@@ -38,6 +38,7 @@ from src.cpu_monitor.cpu_monitor import init_cpu_monitor
 from src.network_monitor.network_monitor import init_network_monitor
 from src.user_monitor.user_monitor import init_user_monitor
 from src.priv_monitor.priv_monitor import init_priv_monitor
+from src.process_monitor.process_monitor import init_process_monitor
 
 async def main():
     """
@@ -48,6 +49,7 @@ async def main():
     network_monitor = init_network_monitor()
     user_monitor = init_user_monitor()
     priv_monitor = init_priv_monitor()
+    process_monitor = init_process_monitor()
 
     # Start Flask server in a separate greenlet
     app = create_app()  # No monitor arguments needed
