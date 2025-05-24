@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KernelLens Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white sidebar md:translate-x-0" id="sidebar">
+        <div class="p-4">
+            <h1 class="text-2xl font-bold">KernelLens</h1>
+            <nav class="mt-6">
+                <ul>
+                    <li><a href="#" data-section="cpu" class="block py-2 px-4 hover:bg-gray-600 rounded sidebar-link">CPU Utilization</a></li>
+                    <li><a href="#" data-section="alarms" class="block py-2 px-4 hover:bg-gray-600 rounded sidebar-link">Threshold Alarms</a></li>
+                    <li><a href="#" data-section="user-activity" class="block py-2 px-4 hover:bg-gray-600 rounded sidebar-link">User Activity</a></li>
+                    <li><a href="#" data-section="processes" class="block py-2 px-4 hover:bg-gray-600 rounded sidebar-link">Process Manipulation</a></li>
+                    <li><a href="#" data-section="network" class="block py-2 px-4 hover:bg-gray-600 rounded sidebar-link">Network Packet Transfer</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Toggle Button for Mobile -->
+    <button id="toggleSidebar" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-gray-800 text-white rounded">
+        ☰
+    </button>
+
+    <!-- Main Content -->
+    <div class="ml-0 md:ml-64 p-6 transition-all min-h-screen">
+        <h1 class="text-3xl font-bold mb-6 text-white">System Monitoring Dashboard</h1>
+
+        <!-- CPU Utilization -->
+        <section id="cpu" class="hidden-section">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">CPU Utilization Over Time</h2>
+                    <canvas id="cpuPieChart"></canvas>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">CPU Time by Process</h2>
+                    <canvas id="cpuBarChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
+                <h2 class="text-xl font-semibold mb-4 text-white">CPU Metrics</h2>
+                <div class="table-container">
+                    <table class="w-full table-auto">
+                        <thead>
+                            <tr class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+                                <th class="px-4 py-2">Process ID</th>
+                                <th class="px-4 py-2">Process Name</th>
+                                <th class="px-4 py-2">CPU Time (s)</th>
+                                <th class="px-4 py-2">Memory (MB)</th>
+                                <th class="px-4 py-2">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cpuTable" class="text-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Threshold Alarms -->
+        <section id="alarms" class="hidden-section">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Triggered CPU Over Time</h2>
+                    <canvas id="alarmsPieChart"></canvas>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">CPU % by Process</h2>
+                    <canvas id="alarmsBarChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
+                <h2 class="text-xl font-semibold mb-4 text-white">Alarm Details</h2>
+                <div class="table-container">
+                    <table class="w-full table-auto">
+                        <thead>
+                            <tr class="bg-gradient-to-r from-[#ff6f61] to-[#d64191] text-white">
+                                <th class="px-4 py-2">Process ID</th>
+                                <th class="px-4 py-2">Process Name</th>
+                                <th class="px-4 py-2">CPU %</th>
+                                <th class="px-4 py-2">Threshold</th>
+                                <th class="px-4 py-2">Targeted At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alarmsTable" class="text-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- User Activity -->
+        <section id="user-activity" class="hidden-section">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">User Actions Over Time</h2>
+                    <canvas id="userActivityPieChart"></canvas>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Actions by Process</h2>
+                    <canvas id="userActivityBarChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
+                <h2 class="text-xl font-semibold mb-4 text-white">User Activity Log</h2>
+                <div class="table-container">
+                    <table class="w-full table-auto">
+                        <thead>
+                            <tr class="bg-gradient-to-r from-[#00b7eb] to-[#ff6b6b] text-white">
+                                <th class="px-4 py-2">User Action</th>
+                                <th class="px-4 py-2">Process ID</th>
+                                <th class="px-4 py-2">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userActivityTable" class="text-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Manipulation -->
+        <section id="processes" class="hidden-section">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Manipulation Count Over Time</h2>
+                    <canvas id="processPieChart"></canvas>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Actions by Process</h2>
+                    <canvas id="processBarChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
+                <h2 class="text-xl font-semibold mb-4 text-white">Process Manipulation</h2>
+                <div class="table-container">
+                    <table class="w-full table-auto">
+                        <thead>
+                            <tr class="bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] text-white">
+                                <th class="px-4 py-2">User Action</th>
+                                <th class="px-4 py-2">Target Process</th>
+                                <th class="px-4 py-2">Status</th>
+                                <th class="px-4 py-2">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="processesTable" class="text-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Network Packet Transfer -->
+        <section id="network" class="hidden-section">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Packet Counts Over Time</h2>
+                    <canvas id="networkPieChart"></canvas>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Packet Transfer Over Time</h2>
+                    <canvas id="networkBarChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
+                <h2 class="text-xl font-semibold mb-4 text-white">Network Packet Details</h2>
+                <div class="table-container">
+                    <table class="w-full table-auto">
+                        <thead>
+                            <tr class="bg-gradient-to-r from-[#ff2e63] to-[#5853ff] text-white">
+                                <th class="px-4 py-2">Timestamp</th>
+                                <th class="px-4 py-2">PID</th>
+                                <th class="px-4 py-2">UID</th>
+                                <th class="px-4 py-2">Command</th>
+                                <th class="px-4 py-2">SAddr</th>
+                                <th class="px-4 py-2">DAddr</th>
+                                <th class="px-4 py-2">Sport</th>
+                                <th class="px-4 py-2">Dport</th>
+                                <th class="px-4 py-2">Protocol</th>
+                                <th class="px-4 py-2">Event Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="networkTable" class="text-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
