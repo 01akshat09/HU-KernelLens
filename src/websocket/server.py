@@ -19,6 +19,10 @@ class WebSocketServer:
         try:
             while True:
                 self.cpu_monitor.collect_data()
+                # self.network_monitor.collect_data()
+                # self.priv_monitor.collect_data()
+                # self.user_monitor.collect_data()
+                # self.priv_monitor.collect_data()
                 data = {
                     "cpuUtilization": self.cpu_monitor.cpu_data,
                     "cpuAlarms": self.cpu_monitor.cpu_alarms,
@@ -27,8 +31,25 @@ class WebSocketServer:
                     "privilegedEvents": self.priv_monitor.collect_data(),
                     "processEvents": self.process_monitor.collect_data()
                 }
+                
+                
+                # Send Alerts: 
+
                 if data["cpuAlarms"]:
-                    send_email_alert(data["cpuAlarms"])
+                    send_email_alert(data["cpuAlarms"], "CPU")
+                
+                current_user_activity = data["userActivity"]
+
+                suspicious_user_activities = [event for event in current_user_activity if event.get("suspicious")]
+
+                if suspicious_user_activities:
+                    send_email_alert(suspicious_user_activities, "User Activity")                
+
+                if data["privilegedEvents"]:
+                    send_email_alert(data["privilegedEvents"], "Privileged Process")
+
+                # Send data
+
                 await websocket.send(json.dumps(data))
                 await asyncio.sleep(5)
         except websockets.exceptions.ConnectionClosed:

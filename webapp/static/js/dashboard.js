@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fillTable("cpuAlarmsTable", data.cpuAlarms || [], ["pid", "comm", "cpu", "threshold", "triggeredAt"]);
         fillTable("networkPacketsTable", data.networkPackets || [], ["timestamp", "pid", "comm", "event_type", "saddr", "daddr", "dport", "protocol"]);
         fillTable("privilegedEventsTable", data.privilegedEvents || [], ["time", "pid", "uid", "comm", "syscall", "filename", "args", "insight"]);
-        fillTable("userActivityTable", data.userActivity || [], ["timestamp", "pid", "uid", "comm", "args", "suspicious"]);
+        fillTable("userActivityTable", data.userActivity || [], ["timestamp", "pid", "uid", "comm", "suspicious"]);
         fillTable("processEventsTable", data.processEvents || [], ["timestamp", "pid", "ppid", "comm", "activity", "reason", "action"]);
     }
 
