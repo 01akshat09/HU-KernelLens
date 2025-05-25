@@ -88,6 +88,7 @@
                     <li><a href="#" data-section="user-activity" class="sidebar-link">User Activity</a></li>
                     <li><a href="#" data-section="processes" class="sidebar-link">Process Manipulation</a></li>
                     <li><a href="#" data-section="network" class="sidebar-link">Network Packet Transfer</a></li>
+                    <li><a href="#" data-section="profiler" class="sidebar-link">Application Profiler</a></li>
                 </ul>
             </nav>
         </div>
@@ -252,6 +253,32 @@
                             </tr>
                         </thead>
                         <tbody id="networkTable" class="text-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Application Profiler -->
+        <section id="profiler" class="hidden-section">
+            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-white">Application Profile Analysis</h2>
+                    <div class="text-white bg-blue-600 px-3 py-1 rounded">
+                        Total CPU Time: <span id="totalCpuTime">0</span>s
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead>
+                            <tr class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                                <th class="px-4 py-2">Function</th>
+                                <th class="px-4 py-2">Location</th>
+                                <th class="px-4 py-2">Samples</th>
+                                <th class="px-4 py-2">CPU %</th>
+                                <th class="px-4 py-2">Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profilerTable" class="text-gray-200"></tbody>
                     </table>
                 </div>
             </div>

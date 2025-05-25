@@ -549,6 +549,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // Update Application Profiler
+            if (data.total_cpu_time !== undefined && Array.isArray(data.lines)) {
+                debugLog('Profiler', 'Updating profiler data');
+                try {
+                    // Update total CPU time
+                    const totalCpuTimeElement = document.getElementById('totalCpuTime');
+                    if (totalCpuTimeElement) {
+                        totalCpuTimeElement.textContent = DataTransferItemList.total_cpu_time.toFixed(2);
+                    }
+
+                    // Update profiler table
+                    const profilerTable = document.getElementById('profilerTable');
+                    if (profilerTable) {
+                        profilerTable.innerHTML = data.lines.map(line => `
+                            <tr class="table-row-hover">
+                                <td class="border px-4 py-2 font-mono text-sm">${line.function}</td>
+                                <td class="border px-4 py-2 font-mono text-sm">${line.location}</td>
+                                <td class="border px-4 py-2 text-center">${line.samples}</td>
+                                <td class="border px-4 py-2 text-right">${line.percent.toFixed(2)}%</td>
+                                <td class="border px-4 py-2">
+                                    <div class="w-full bg-gray-700 rounded-full h-2.5">
+                                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${line.percent}%"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                } catch (error) {
+                    debugLog('Error', 'Failed to update profiler data', error);
+                }
+            }
+
             // Update tables
             updateTables(data);
 
