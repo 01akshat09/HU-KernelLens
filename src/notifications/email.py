@@ -43,13 +43,3 @@ def send_email_alert(alarm_data, alarm_type):
         print("Successfully sent the mail")
     except Exception as e:
         print(f"Failed to send mail: {e}")
-
-
-def send_email_alert_limited(cpu_alarms):
-    global last_email_sent_time
-    current_time = time.time()
-    if current_time - last_email_sent_time > EMAIL_SEND_INTERVAL:
-        send_email_alert(cpu_alarms)
-        last_email_sent_time = current_time
-    else:
-        print("Email alert suppressed to avoid spamming (sent recently)")

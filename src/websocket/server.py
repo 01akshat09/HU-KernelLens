@@ -106,11 +106,28 @@ import websockets
 import json
 import logging
 import psutil
+import time
 from src.notifications.email import send_email_alert
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# Added new logic to send cpu alarm emails after 30 mins. 
+
+last_email_sent_time = 0
+EMAIL_SEND_INTERVAL = 30 * 60  # 30 minutes in seconds
+
+def send_email_alert_limited(data, alert_type):
+    """Send email alerts only if 30 minutes have passed since the last email."""
+    global last_email_sent_time
+    current_time = time.time()
+    if current_time - last_email_sent_time > EMAIL_SEND_INTERVAL:
+        send_email_alert(data, alert_type)
+        last_email_sent_time = current_time
+        logger.info(f"Email alert sent for {alert_type}")
+    else:
+        logger.debug(f"Email alert suppressed for {alert_type} (sent recently)")
 
 class WebSocketServer:
     def __init__(self, cpu_monitor, network_monitor, user_monitor, priv_monitor, process_monitor, cpu_line_monitor):
@@ -157,7 +174,7 @@ class WebSocketServer:
                 
                 # Send Alerts: 
                 if data["cpuAlarms"]:
-                    send_email_alert(data["cpuAlarms"], "CPU")
+                    send_email_alert_limited(data["cpuAlarms"], "CPU")
                 
                 current_user_activity = data["userActivity"]
                 suspicious_user_activities = [event for event in current_user_activity if event.get("suspicious")]
