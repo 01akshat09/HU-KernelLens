@@ -1,154 +1,4 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KernelLens Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-</head>
-<body>
-    <div class="burger" onclick="toggleMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-    <div class="sidebar" id="sidebar">
-        <ul>
-            <li onclick="showSection('cpuUtilization')">
-                <i class="fas fa-microchip"></i> CPU Utilization
-            </li>
-            <li onclick="showSection('cpuAlarms')">
-                <i class="fas fa-exclamation-triangle"></i> CPU Alarms
-            </li>
-            <li onclick="showSection('userActivity')">
-                <i class="fas fa-user"></i> User Activity
-            </li>
-            <li onclick="showSection('privilegedEvents')">
-                <i class="fas fa-tasks"></i> Privileged Events
-            </li>
-            <li onclick="showSection('networkPackets')">
-                <i class="fas fa-network-wired"></i> Network Packets
-            </li>
-            <li onclick="showSection('processEvents')">
-                <i class="fas fa-ghost"></i> Process Events
-            </li>
-        </ul>
-    </div>
-    <div class="main-content" id="mainContent">
-        <header>KernelLens Monitoring Dashboard</header>
-        <div id="error-message" class="hidden text-red-500 text-center mb-4">
-            Failed to connect to WebSocket server or initialize monitoring. Please check the server logs.
-        </div>
-        <div id="cpuUtilization" class="table-section active">
-            <h2>CPU Utilization</h2>
-            <canvas id="cpuUtilizationChart" height="100"></canvas>
-            <table id="cpuUtilizationTable">
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Process ID</th>
-                        <th>Process Name</th>
-                        <th>CPU Time (s)</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-        <div id="cpuAlarms" class="table-section">
-            <h2>CPU Alarms</h2>
-            <canvas id="cpuAlarmsChart" height="100"></canvas>
-            <table id="cpuAlarmsTable">
-                <thead>
-                    <tr>
-                        <th>Process ID</th>
-                        <th>Process Name</th>
-                        <th>CPU Time (s)</th>
-                        <th>Threshold (s)</th>
-                        <th>Triggered At</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-        <div id="userActivity" class="table-section">
-            <h2>User Activity</h2>
-            <canvas id="userActivityChart" height="100"></canvas>
-            <table id="userActivityTable">
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>PID</th>
-                        <th>UID</th>
-                        <th>Command</th>
-                        <th>Suspicious</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-        <div id="privilegedEvents" class="table-section">
-            <h2>Privileged Events</h2>
-            <table id="privilegedEventsTable">
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>PID</th>
-                        <th>UID</th>
-                        <th>Command</th>
-                        <th>Syscall</th>
-                        <th>Filename</th>
-                        <th>Arguments</th>
-                        <th>Insight</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-        <div id="networkPackets" class="table-section">
-            <h2>Network Packets</h2>
-            <table id="networkPacketsTable">
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>PID</th>
-                        <th>Command</th>
-                        <th>Event Type</th>
-                        <th>Source Address</th>
-                        <th>Dest Address</th>
-                        <th>Dest Port</th>
-                        <th>Protocol</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-        <div id="processEvents" class="table-section">
-            <h2>Process Events</h2>
-            <table id="processEventsTable">
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>PID</th>
-                        <th>PPID</th>
-                        <th>Command</th>
-                        <th>Activity</th>
-                        <th>Reason</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-</body>
-</html>
- -->
-
-
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -235,7 +85,6 @@
                         <th>PID</th>
                         <th>UID</th>
                         <th>Command</th>
-                        <!-- <th>Arguments</th> -->
                         <th>Suspicious</th>
                     </tr>
                 </thead>
@@ -300,9 +149,13 @@
             <div class="total-cpu-time">
                 <strong>Total CPU Time:</strong> <span id="totalCpuTime">0.0</span> seconds
             </div>
+            <div class="total-cpu-usage">
+                <strong>Total CPU Usage:</strong> <span id="totalCpuUsage">0.0</span> %
+            </div>
             <table id="cpuLineUsageTable">
                 <thead>
                     <tr>
+                        <th id="timestamp">Timestamp</th>
                         <th>Function</th>
                         <th>Location</th>
                         <th>Samples</th>

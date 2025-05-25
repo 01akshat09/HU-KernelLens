@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
       function updateTables(data) {
           const fillTable = (id, rows, columns) => {
               const tbody = document.querySelector(`#${id} tbody`);
-              tbody.innerHTML = ''; // Clear existing rows
+            //   tbody.innerHTML = ''; // Clear existing rows
               rows.forEach(row => {
                   const tr = document.createElement('tr');
                   columns.forEach(col => {
@@ -70,13 +70,21 @@ document.addEventListener('DOMContentLoaded', () => {
           fillTable("privilegedEventsTable", data.privilegedEvents || [], ["time", "pid", "uid", "comm", "syscall", "filename", "args", "insight"], false);
           fillTable("userActivityTable", data.userActivity || [], ["timestamp", "pid", "uid", "comm", "suspicious"], false);
           fillTable("processEventsTable", data.processEvents || [], ["timestamp", "pid", "ppid", "comm", "activity", "reason", "action"], false);
-          fillTable("cpuLineUsageTable", data.cpuLineUsage.lines || [], ["function", "location", "samples", "percent"], false);
-
+        //   fillTable("cpuLineUsageTable", data.cpuLineUsage.lines || [], ["timestamp", "function", "location", "samples", "percent"], false);
+          const cpuLineUsageRows = (data.cpuLineUsage?.lines || []).map(row => ({
+    ...row,
+    timestamp: data.cpuLineUsage?.timestamp || ''
+}));
+fillTable("cpuLineUsageTable", cpuLineUsageRows, ["timestamp", "function", "location", "samples", "percent"]);
           // Update total CPU time
           const totalCpuTime = document.getElementById('totalCpuTime');
+          const totalCpuUsage = document.getElementById('totalCpuUsage');
           if (totalCpuTime) {
               totalCpuTime.textContent = data.cpuLineUsage.total_cpu_time ;
           }
+          if (totalCpuUsage) {
+            totalCpuUsage.textContent = data.cpuLineUsage?.total_cpu_usage;
+        }
       }
 
       function renderCharts(data) {
@@ -113,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // CPU Utilization Chart
           const cpuLabels = data.cpuUtilization?.map(row => row.timestamp) || [];
           const cpuData = data.cpuUtilization?.map(row => row.cpu_time) || [];
-          createChart("cpuUtilizationChart", cpuLabels, "CPU Time (s)", cpuData, "#007bff");
+          createChart("cpuUtilizationChart", cpuLabels, "CPU Time (s)", cpuData, "#3b82f6");
 
           // CPU Alarms Chart
           const alarmLabels = data.cpuAlarms?.map(row => row.triggeredAt) || [];

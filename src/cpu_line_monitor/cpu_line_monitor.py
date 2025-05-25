@@ -3,6 +3,7 @@ import subprocess
 import psutil
 import time
 import logging
+import datetime
 from collections import defaultdict
 
 # Configure logging
@@ -14,7 +15,7 @@ class CPULineMonitor:
         self.pid = pid
         self.binary_path = f"/proc/{pid}/exe"
         self.bpf = None
-        self.line_usage_data = {"total_cpu_time": 0.0, "lines": []}
+        self.line_usage_data = {"timestamp": "", "total_cpu_time": 0.0, "total_cpu_usage": 0.0, "lines": []}
 
     def init_bpf(self):
         """Initialize the BPF program for CPU line usage monitoring."""
@@ -35,10 +36,10 @@ int on_event(struct pt_regs *ctx) {
                 ev_config=PerfSWConfig.CPU_CLOCK,
                 fn_name="on_event",
                 pid=self.pid,
-                sample_freq=99
+                sample_freq=999
             )
             logger.info(f"CPU line usage BPF program initialized for PID {self.pid}")
-            logger.debug(f"Attached perf event to PID {self.pid} with sample_freq=99")
+            logger.debug(f"Attached perf event to PID {self.pid} with sample_freq=999")
         except Exception as e:
             logger.error(f"Failed to initialize CPU line usage BPF program for PID {self.pid}: {e}")
             raise
@@ -53,6 +54,17 @@ int on_event(struct pt_regs *ctx) {
             return total
         except (psutil.NoSuchProcess, psutil.Error) as e:
             logger.warning(f"Could not get CPU time for PID {self.pid}: {e}")
+            return 0.0
+
+    def get_total_cpu_usage(self):
+        """Get total CPU usage percentage for the monitored process."""
+        try:
+            p = psutil.Process(self.pid)
+            cpu_usage = p.cpu_percent(interval=1)  # Get CPU usage percentage
+            logger.debug(f"Got CPU usage for PID {self.pid}: {cpu_usage}%")
+            return round(cpu_usage, 2)
+        except (psutil.NoSuchProcess, psutil.Error) as e:
+            logger.warning(f"Could not get CPU usage for PID {self.pid}: {e}")
             return 0.0
 
     def resolve_addr(self, ip):
@@ -74,14 +86,18 @@ int on_event(struct pt_regs *ctx) {
             return "??", "??:0"
 
     def collect_data(self):
-        """Collect CPU line usage data."""
+        """Collect CPU line usage data with timestamp and total CPU usage."""
         if self.bpf is None:
             logger.error("Cannot collect CPU line usage data: BPF program not initialized")
-            self.line_usage_data = {"total_cpu_time": 0.0, "lines": []}
+            self.line_usage_data = {"timestamp": "", "total_cpu_time": 0.0, "total_cpu_usage": 0.0, "lines": []}
             return
 
         try:
+            # Get current timestamp
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             total_cpu_time = self.get_total_cpu_time()
+            total_cpu_usage = self.get_total_cpu_usage()
+
             counts = self.bpf.get_table("counts")
             ip_counts = defaultdict(int)
             for k, v in counts.items():
@@ -92,7 +108,12 @@ int on_event(struct pt_regs *ctx) {
 
             if not ip_counts:
                 logger.debug(f"No CPU activity captured for PID {self.pid}")
-                self.line_usage_data = {"total_cpu_time": total_cpu_time, "lines": []}
+                self.line_usage_data = {
+
+                    "total_cpu_time": total_cpu_time,
+                    "total_cpu_usage": total_cpu_usage,
+                    "lines": []
+                }
                 return
 
             resolved = defaultdict(lambda: {"samples": 0, "function": "", "location": ""})
@@ -115,13 +136,15 @@ int on_event(struct pt_regs *ctx) {
                 })
 
             self.line_usage_data = {
+                "timestamp": timestamp,
                 "total_cpu_time": total_cpu_time,
+                "total_cpu_usage": total_cpu_usage,
                 "lines": lines
             }
             logger.info(f"Collected CPU line usage data for PID {self.pid}: {len(lines)} lines")
         except Exception as e:
             logger.error(f"Error collecting CPU line usage data for PID {self.pid}: {e}")
-            self.line_usage_data = {"total_cpu_time": 0.0, "lines": []}
+            self.line_usage_data = {"timestamp": "", "total_cpu_time": 0.0, "total_cpu_usage": 0.0, "lines": []}
 
 def init_cpu_line_monitor(pid):
     """Initialize and return the CPU line monitor."""
