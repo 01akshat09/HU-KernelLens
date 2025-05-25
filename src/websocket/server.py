@@ -85,4 +85,3 @@ async def start_websocket_server():
     server = WebSocketServer(cpu_monitor, network_monitor, user_monitor, priv_monitor, process_monitor)
     await server.run()
 
-
