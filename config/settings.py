@@ -9,4 +9,4 @@ EMAIL_CONFIG = {
       "password": os.getenv("EMAIL_PASSWORD")
 }
 
-GO_APP_PID = 45104
+GO_APP_PID = 0 # Change it according to your application PID

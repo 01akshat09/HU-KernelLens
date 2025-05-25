@@ -1,58 +1,84 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #f5f7fa;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
             margin: 0;
-            padding: 0;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .logo-text {
-            font-size: 2.2em;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: #1a2a49;
-        }
-
-        .logo-text .accent {
-            color: #86bc25;
-            font-weight: 700;
+            padding: 20px;
         }
 
         .container {
             background-color: #fff;
             max-width: 500px;
-            margin: 40px auto;
-            padding: 32px 36px 24px 36px;
-            border-radius: 10px;
-            box-shadow: 0 2px 12px #d6232314;
-            border: 1px solid #c21515;
-            border-left: 6px solid #d31717;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .logo-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #1da1f2;
         }
 
         .header {
-            background-color: #d42121;
-            color: #fff;
-            padding: 20px 0 16px 0;
-            border-radius: 10px 10px 0 0;
-            text-align: center;
-            margin: -32px -36px 28px -36px;
+            color: #000;
+            text-align: left;
+            margin-bottom: 15px;
         }
 
         h2 {
             margin: 0;
-            font-size: 1.6em;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .greeting {
+            margin-bottom: 15px;
+            font-size: 1em;
+            color: #333;
+        }
+
+        .alert-box {
+            background-color: #ffe5d9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .alert-box strong {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        .alert-box p {
+            margin: 0;
+            font-size: 0.95em;
+            color: #333;
+        }
+
+        .more-details {
+            display: inline-block;
+            background-color: #8b1e3f;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9em;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .data-container {
+            display: block; /* Shown when toggled */
         }
 
         ul {
@@ -62,33 +88,34 @@
         }
 
         li {
-            margin-bottom: 14px;
-            font-size: 1.08em;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+            color: #333;
         }
 
         strong {
-            color: #dd331c;
-            font-weight: 600;
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #ddd;
+            margin: 10px 0;
         }
 
         .footer {
-            margin-top: 32px;
-            font-size: 0.96em;
-            color: #dd331c;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
             text-align: center;
-        }
-
-        .greeting {
-            margin-bottom: 18px;
-            font-size: 1.05em;
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <div class="logo">
-            <span class="logo-text">Kernel<span class="accent">Lens</span></span>
+            <span class="logo-text">KernelLens</span>
         </div>
         <div class="header">
             <h2>{{ alarm_type }} Alert</h2>
@@ -97,43 +124,57 @@
             Dear Team,<br>
             {{ message }}
         </div>
-        {% if alarm_type == "CPU" %}
-        {% for data in alarm_data %}
-        <ul>
-            <li><strong>PID:</strong> {{ data.pid }}</li>
-            <li><strong>Command:</strong> {{ data.comm }}</li>
-            <li><strong>CPU Usage:</strong> {{ data.cpu }}%</li>
-            <li><strong>Threshold:</strong> {{ data.threshold }}%</li>
-            <li><strong>Triggered At:</strong> {{ data.triggeredAt }}</li>
-        </ul>
-        {% endfor %}
-        {% elif alarm_type == "User Activity" %}
-        {% for data in alarm_data %}
-        <ul>
-            <li><strong>PID:</strong> {{ data.pid }}</li>
-            <li><strong>User ID:</strong> {{ data.uid }}</li>
-            <li><strong>Command:</strong> {{ data.comm }}</li>
-            <li><strong>Arguments:</strong> {{ data.args }}</li>
-            <li><strong>Time:</strong> {{ data.timestamp }}</li>
-        </ul>
-        {% endfor %}
-        {% elif alarm_type == "Privileged Process" %}
-        {% for data in alarm_data %}
-        <ul>
-            <li><strong>PID:</strong> {{ data.pid }}</li>
-            <li><strong>User ID:</strong> {{ data.uid }}</li>
-            <li><strong>Command:</strong> {{ data.comm }}</li>
-            <li><strong>Syscall:</strong> {{ data.syscall }}</li>
-            <li><strong>Filename:</strong> {{ data.filename }}</li>
-            <li><strong>Insight:</strong> {{ data.insight }}</li>
-            <li><strong>Time:</strong> {{ data.time }}</li>
-        </ul>
-        {% endfor %}
-        {% endif %}
+        <div class="alert-box">
+            <p><strong>ALERT</strong></p>
+            {% if alarm_type == "CPU" %}
+            <p>A process has exceeded the CPU usage threshold and requires immediate attention. We apologize for the disruption.</p>
+            {% elif alarm_type == "User Activity" %}
+            <p>Suspicious user activity has been detected on the system. Please review the details to ensure security compliance. We apologize for the inconvenience.</p>
+            {% elif alarm_type == "Privileged Process" %}
+            <p>A privileged process has triggered an alert due to unusual activity. Immediate investigation is recommended. We apologize for the inconvenience.</p>
+            {% endif %}
+        </div>
+        <div id="details" class="data-container">
+            {% if alarm_type == "CPU" %}
+            {% for data in alarm_data %}
+            <ul>
+                <li><strong>PID:</strong> {{ data.pid }}</li>
+                <li><strong>Command:</strong> {{ data.comm }}</li>
+                <li><strong>CPU Usage:</strong> {{ data.cpu }}%</li>
+                <li><strong>Threshold:</strong> {{ data.threshold }} ms</li>
+                <li><strong>Triggered At:</strong> {{ data.triggeredAt }}</li>
+            </ul>
+            <hr>
+            {% endfor %}
+            {% elif alarm_type == "User Activity" %}
+            {% for data in alarm_data %}
+            <ul>
+                <li><strong>PID:</strong> {{ data.pid }}</li>
+                <li><strong>User ID:</strong> {{ data.uid }}</li>
+                <li><strong>Command:</strong> {{ data.comm }}</li>
+                <li><strong>Time:</strong> {{ data.timestamp }}</li>
+            </ul>
+            <hr>
+            {% endfor %}
+            {% elif alarm_type == "Privileged Process" %}
+            {% for data in alarm_data %}
+            <ul>
+                <li><strong>PID:</strong> {{ data.pid }}</li>
+                <li><strong>User ID:</strong> {{ data.uid }}</li>
+                <li><strong>Command:</strong> {{ data.comm }}</li>
+                <li><strong>Syscall:</strong> {{ data.syscall }}</li>
+                <li><strong>Filename:</strong> {{ data.filename }}</li>
+                <li><strong>Insight:</strong> {{ data.insight }}</li>
+                <li><strong>Time:</strong> {{ data.time }}</li>
+            </ul>
+            <hr>
+            {% endfor %}
+            {% endif %}
+        </div>
         <div class="footer">
             This is an automated alert from your monitoring system.
         </div>
     </div>
-</body>
 
-</ht
+</body>
+</html>
