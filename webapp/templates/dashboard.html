@@ -32,10 +32,10 @@
                 <i class="fas fa-network-wired"></i> Network Packets
             </li>
             <li onclick="showSection('processEvents')">
-                <i class="fas fa-ghost"></i> Process Events
+                <i class="fas fa-ghost"></i> Zombie Process
             </li>
             <li onclick="showSection('cpuLineUsage')">
-                <i class="fas fa-code"></i> CPU Line Usage
+                <i class="fas fa-code"></i> Application Profiling
             </li>
         </ul>
     </div>
@@ -111,6 +111,7 @@
         </div>
         <div id="networkPackets" class="table-section">
             <h2>Network Packets</h2>
+            <canvas id="networkPacketsChart" height="100"></canvas>
             <table id="networkPacketsTable">
                 <thead>
                     <tr>
@@ -128,7 +129,7 @@
             </table>
         </div>
         <div id="processEvents" class="table-section">
-            <h2>Process Events</h2>
+            <h2>Zombie Process</h2>
             <table id="processEventsTable">
                 <thead>
                     <tr>
@@ -145,7 +146,7 @@
             </table>
         </div>
         <div id="cpuLineUsage" class="table-section">
-            <h2>CPU Line Usage</h2>
+            <h2>Application Profiling</h2>
             <div class="total-cpu-time">
                 <strong>Total CPU Time:</strong> <span id="totalCpuTime">0.0</span> seconds
             </div>
@@ -155,7 +156,7 @@
             <table id="cpuLineUsageTable">
                 <thead>
                     <tr>
-                        <th id="timestamp">Timestamp</th>
+                        <th>Timestamp</th>
                         <th>Function</th>
                         <th>Location</th>
                         <th>Samples</th>

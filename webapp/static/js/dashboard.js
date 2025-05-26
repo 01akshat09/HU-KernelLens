@@ -87,31 +87,99 @@ fillTable("cpuLineUsageTable", cpuLineUsageRows, ["timestamp", "function", "loca
         }
       }
 
-      function renderCharts(data) {
+    //   function renderCharts(data) {
+    //       if (window.charts) window.charts.forEach(c => c.destroy());
+    //       window.charts = [];
+
+    //       const createChart = (id, labels, label, dataPoints, color) => {
+    //           const ctx = document.getElementById(id).getContext('2d');
+    //           const chart = new Chart(ctx, {
+    //               type: 'line',
+    //               data: {
+    //                   labels: labels.slice(0, 20),
+    //                   datasets: [{
+    //                       label: label,
+    //                       data: dataPoints.slice(0, 20),
+    //                       borderColor: color,
+    //                       backgroundColor: color + '33',
+    //                       fill: true,
+    //                       tension: 0.4
+    //                   }]
+    //               },
+    //               options: {
+    //                   responsive: true,
+    //                   plugins: { legend: { position: 'top' } },
+    //                   scales: {
+    //                       x: { title: { display: true, text: 'Timestamp' } },
+    //                       y: { beginAtZero: true, title: { display: true, text: label } }
+    //                   }
+    //               }
+    //           });
+    //           window.charts.push(chart);
+    //       };
+
+    //       // CPU Utilization Chart
+    //       const cpuLabels = data.cpuUtilization?.map(row => row.timestamp) || [];
+    //       const cpuData = data.cpuUtilization?.map(row => row.cpu_time) || [];
+    //       createChart("cpuUtilizationChart", cpuLabels, "CPU Time (s)", cpuData, "#3b82f6");
+
+    //       // CPU Alarms Chart
+    //       const alarmLabels = data.cpuAlarms?.map(row => row.triggeredAt) || [];
+    //       const alarmData = data.cpuAlarms?.map(row => row.cpu) || [];
+    //       createChart("cpuAlarmsChart", alarmLabels, "CPU Time (s)", alarmData, "#dc3545");
+
+    //       // User Activity Chart
+    //       if (data.userActivity && data.userActivity.length > 0) {
+    //           const userLabels = data.userActivity.map(row => row.timestamp);
+    //           const userData = data.userActivity.map(row => row.pid); // Using PID as a proxy for activity count
+    //           createChart("userActivityChart", userLabels, "Process ID", userData, "#28a745");
+    //       }
+    //   }
+
+
+  function renderCharts(data) {
           if (window.charts) window.charts.forEach(c => c.destroy());
           window.charts = [];
 
-          const createChart = (id, labels, label, dataPoints, color) => {
+          const createChart = (id, labels, datasets, yAxisLabel) => {
               const ctx = document.getElementById(id).getContext('2d');
               const chart = new Chart(ctx, {
                   type: 'line',
                   data: {
                       labels: labels.slice(0, 20),
-                      datasets: [{
-                          label: label,
-                          data: dataPoints.slice(0, 20),
-                          borderColor: color,
-                          backgroundColor: color + '33',
-                          fill: true,
-                          tension: 0.4
-                      }]
+                      datasets: datasets
                   },
                   options: {
                       responsive: true,
-                      plugins: { legend: { position: 'top' } },
+                      plugins: {
+                          legend: {
+                              position: 'top',
+                              labels: {
+                                  color: '#ffffff',
+                                  font: { size: 12 }
+                              }
+                          }
+                      },
                       scales: {
-                          x: { title: { display: true, text: 'Timestamp' } },
-                          y: { beginAtZero: true, title: { display: true, text: label } }
+                          x: {
+                              title: {
+                                  display: true,
+                                  text: 'Time',
+                                  color: '#b0b0b0',
+                                  font: { size: 12 }
+                              },
+                              ticks: { color: '#b0b0b0', font: { size: 10 } }
+                          },
+                          y: {
+                              beginAtZero: true,
+                              title: {
+                                  display: true,
+                                  text: yAxisLabel,
+                                  color: '#b0b0b0',
+                                  font: { size: 12 }
+                              },
+                              ticks: { color: '#b0b0b0', font: { size: 10 } }
+                          }
                       }
                   }
               });
@@ -121,21 +189,61 @@ fillTable("cpuLineUsageTable", cpuLineUsageRows, ["timestamp", "function", "loca
           // CPU Utilization Chart
           const cpuLabels = data.cpuUtilization?.map(row => row.timestamp) || [];
           const cpuData = data.cpuUtilization?.map(row => row.cpu_time) || [];
-          createChart("cpuUtilizationChart", cpuLabels, "CPU Time (s)", cpuData, "#3b82f6");
+          createChart("cpuUtilizationChart", cpuLabels, [{
+              label: 'CPU UTILIZATION',
+              data: cpuData,
+              borderColor: '#3b82f6',
+              backgroundColor: 'transparent',
+              fill: false,
+              tension: 0.4,
+              borderWidth: 2,
+              pointRadius: 0
+          }], "CPU %");
 
           // CPU Alarms Chart
           const alarmLabels = data.cpuAlarms?.map(row => row.triggeredAt) || [];
           const alarmData = data.cpuAlarms?.map(row => row.cpu) || [];
-          createChart("cpuAlarmsChart", alarmLabels, "CPU Time (s)", alarmData, "#dc3545");
+          createChart("cpuAlarmsChart", alarmLabels, [{
+              label: 'TRIGGERED CPU',
+              data: alarmData,
+              borderColor: '#dc3545',
+              backgroundColor: 'transparent',
+              fill: false,
+              tension: 0,
+              borderWidth: 2,
+              pointRadius: 0
+          }], "CPU %");
 
-          // User Activity Chart
-          if (data.userActivity && data.userActivity.length > 0) {
-              const userLabels = data.userActivity.map(row => row.timestamp);
-              const userData = data.userActivity.map(row => row.pid); // Using PID as a proxy for activity count
-              createChart("userActivityChart", userLabels, "Process ID", userData, "#28a745");
-          }
+          // Network Packets Chart (Only TCP)
+          const packetLabels = data.networkPackets?.map(row => row.timestamp) || [];
+          const tcpData = data.networkPackets?.map(row => row.protocol === 'TCP' ? 6 : 0) || [];
+          createChart("networkPacketsChart", packetLabels, [
+              {
+                  label: 'TCP',
+                  data: tcpData,
+                  borderColor: '#dc3545',
+                  backgroundColor: 'transparent',
+                  fill: false,
+                  tension: 0,
+                  borderWidth: 2,
+                  pointRadius: 0
+              }
+          ], "Packets");
+
+          // User Activity Chart (Always render, even if no data)
+          const userLabels = data.userActivity?.map(row => row.timestamp) || [];
+          const userData = data.userActivity?.map(row => row.pid) || [];
+          createChart("userActivityChart", userLabels, [{
+              label: 'Process ID',
+              data: userData,
+              borderColor: '#28a745',
+              backgroundColor: 'transparent',
+              fill: false,
+              tension: 0.4,
+              borderWidth: 2,
+              pointRadius: 0
+          }], "Process ID");
       }
-
       // Initialize WebSocket
       initializeWebSocket();
   });

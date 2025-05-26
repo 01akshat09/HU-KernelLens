@@ -53,7 +53,7 @@ class CPUMonitor:
                         "cpu_time": round(cpu_time_sec, 4)
                     })
 
-                    if cpu_time_sec > 1000.0:
+                    if cpu_time_sec > 5000.0:
                         self.cpu_alarms.append({
                             "pid": pid,
                             "comm": comm,
