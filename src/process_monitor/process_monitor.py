@@ -101,7 +101,8 @@ class ProcessMonitor:
                 except Exception as e:
                     action = f"Failed to kill PID {pid} ({e})"
             else:
-                logger.debug(f"Safe process detected: PID {pid}, Comm {comm}")
+                # logger.debug(f"Safe process detected: PID {pid}, Comm {comm}")
+                pass
 
             self.process_events.append({
                 "timestamp": ts,
@@ -113,7 +114,7 @@ class ProcessMonitor:
                 "description": desc,
                 "action": action
             })
-            logger.debug(f"Appended process event: {self.process_events[-1]}")
+            # logger.debug(f"Appended process event: {self.process_events[-1]}")
         except Exception as e:
             logger.error(f"Error handling process event: {e}")
 
@@ -124,7 +125,7 @@ class ProcessMonitor:
             return []
         current_events = list(self.process_events)
         self.process_events.clear()
-        logger.debug(f"Collected {len(current_events)} process events")
+        # logger.debug(f"Collected {len(current_events)} process events")
         return current_events
 
 def init_process_monitor():

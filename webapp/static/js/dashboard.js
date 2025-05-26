@@ -71,71 +71,34 @@ document.addEventListener('DOMContentLoaded', () => {
           fillTable("userActivityTable", data.userActivity || [], ["timestamp", "pid", "uid", "comm", "suspicious"], false);
           fillTable("processEventsTable", data.processEvents || [], ["timestamp", "pid", "ppid", "comm", "activity", "reason", "action"], false);
         //   fillTable("cpuLineUsageTable", data.cpuLineUsage.lines || [], ["timestamp", "function", "location", "samples", "percent"], false);
-          const cpuLineUsageRows = (data.cpuLineUsage?.lines || []).map(row => ({
-    ...row,
-    timestamp: data.cpuLineUsage?.timestamp || ''
-}));
-fillTable("cpuLineUsageTable", cpuLineUsageRows, ["timestamp", "function", "location", "samples", "percent"]);
-          // Update total CPU time
-          const totalCpuTime = document.getElementById('totalCpuTime');
-          const totalCpuUsage = document.getElementById('totalCpuUsage');
-          if (totalCpuTime) {
-              totalCpuTime.textContent = data.cpuLineUsage.total_cpu_time ;
-          }
-          if (totalCpuUsage) {
-            totalCpuUsage.textContent = data.cpuLineUsage?.total_cpu_usage;
-        }
-      }
+         const cpuLineUsageRows = (data.cpuLineUsage?.lines || [])
+            .filter(row => row.function !== '??' && row.function !== '??:0')
+            .map(row => ({
+                ...row,
+                timestamp: data.cpuLineUsage?.timestamp || '',
+                total_cpu_time: data.cpuLineUsage?.total_cpu_time 
+            }));
+            fillTable("cpuLineUsageTable", cpuLineUsageRows, ["timestamp", "total_cpu_time","function", "location", "samples", "percent"]);
+// Update total CPU time
 
-    //   function renderCharts(data) {
-    //       if (window.charts) window.charts.forEach(c => c.destroy());
-    //       window.charts = [];
+    }
 
-    //       const createChart = (id, labels, label, dataPoints, color) => {
-    //           const ctx = document.getElementById(id).getContext('2d');
-    //           const chart = new Chart(ctx, {
-    //               type: 'line',
-    //               data: {
-    //                   labels: labels.slice(0, 20),
-    //                   datasets: [{
-    //                       label: label,
-    //                       data: dataPoints.slice(0, 20),
-    //                       borderColor: color,
-    //                       backgroundColor: color + '33',
-    //                       fill: true,
-    //                       tension: 0.4
-    //                   }]
-    //               },
-    //               options: {
-    //                   responsive: true,
-    //                   plugins: { legend: { position: 'top' } },
-    //                   scales: {
-    //                       x: { title: { display: true, text: 'Timestamp' } },
-    //                       y: { beginAtZero: true, title: { display: true, text: label } }
-    //                   }
-    //               }
-    //           });
-    //           window.charts.push(chart);
-    //       };
+    // const cpuLineUsageRows = (data.cpuLineUsage?.lines || [])
+    //         .filter(row => row.function !== '??' && row.function !== '??:0')
+    //         .map(row => ({
+    //             ...row,
+    //             timestamp: data.cpuLineUsage?.timestamp || ''
+    //         }));
 
-    //       // CPU Utilization Chart
-    //       const cpuLabels = data.cpuUtilization?.map(row => row.timestamp) || [];
-    //       const cpuData = data.cpuUtilization?.map(row => row.cpu_time) || [];
-    //       createChart("cpuUtilizationChart", cpuLabels, "CPU Time (s)", cpuData, "#3b82f6");
 
-    //       // CPU Alarms Chart
-    //       const alarmLabels = data.cpuAlarms?.map(row => row.triggeredAt) || [];
-    //       const alarmData = data.cpuAlarms?.map(row => row.cpu) || [];
-    //       createChart("cpuAlarmsChart", alarmLabels, "CPU Time (s)", alarmData, "#dc3545");
+    //     // Update total CPU time and usage
+    //     const totalCpuTime = document.getElementById('totalCpuTime');
+    //     if (totalCpuTime) {
+    //         totalCpuTime.textContent = data.cpuLineUsage?.total_cpu_time || '0';
+    //     }
+    // }
 
-    //       // User Activity Chart
-    //       if (data.userActivity && data.userActivity.length > 0) {
-    //           const userLabels = data.userActivity.map(row => row.timestamp);
-    //           const userData = data.userActivity.map(row => row.pid); // Using PID as a proxy for activity count
-    //           createChart("userActivityChart", userLabels, "Process ID", userData, "#28a745");
-    //       }
-    //   }
-
+    // fillTable("cpuLineUsageTable", cpuLineUsageRows, ["timestamp", "function", "location", "samples", "percent"]);
 
   function renderCharts(data) {
           if (window.charts) window.charts.forEach(c => c.destroy());
