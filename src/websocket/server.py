@@ -6,6 +6,23 @@ import psutil
 import time
 from src.notifications.email import send_email_alert
 
+##############################
+
+# from influxdb_client import InfluxDBClient, Point, WritePrecision
+# from influxdb_client.client.write_api import SYNCHRONOUS
+# from config.settings import INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET
+
+# # Configure logging
+# logging.basicConfig(level=logging.DEBUG)
+# logger = logging.getLogger(__name__)
+
+# # InfluxDB client setup
+# influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
+# write_api = influx_client.write_api(write_options=SYNCHRONOUS)
+# query_api = influx_client.query_api()
+
+##############################
+
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

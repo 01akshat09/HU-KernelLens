@@ -70,35 +70,54 @@ document.addEventListener('DOMContentLoaded', () => {
           fillTable("privilegedEventsTable", data.privilegedEvents || [], ["time", "pid", "uid", "comm", "syscall", "filename", "args", "insight"], false);
           fillTable("userActivityTable", data.userActivity || [], ["timestamp", "pid", "uid", "comm", "suspicious"], false);
           fillTable("processEventsTable", data.processEvents || [], ["timestamp", "pid", "ppid", "comm", "activity", "reason", "action"], false);
-        //   fillTable("cpuLineUsageTable", data.cpuLineUsage.lines || [], ["timestamp", "function", "location", "samples", "percent"], false);
-         const cpuLineUsageRows = (data.cpuLineUsage?.lines || [])
+         
+        const cpuLineUsageRows = (data.cpuLineUsage?.lines || [])
             .filter(row => row.function !== '??' && row.function !== '??:0')
             .map(row => ({
                 ...row,
                 timestamp: data.cpuLineUsage?.timestamp || '',
                 total_cpu_time: data.cpuLineUsage?.total_cpu_time 
             }));
-            fillTable("cpuLineUsageTable", cpuLineUsageRows, ["timestamp", "total_cpu_time","function", "location", "samples", "percent"]);
-// Update total CPU time
+            // fillTable("cpuLineUsageTable", cpuLineUsageRows, ["timestamp", "total_cpu_time","function", "location", "samples", "percent"]);
 
-    }
+             let lastTimestamp = null;
+            let lastTotalCpuTime = null;
+            const tbody = document.querySelector(`#cpuLineUsageTable tbody`);
+            cpuLineUsageRows.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                
+                // Timestamp cell
+                const timestampTd = document.createElement('td');
+                if (index === 0 || row.timestamp !== lastTimestamp) {
+                    timestampTd.textContent = row.timestamp;
+                    lastTimestamp = row.timestamp;
+                } else {
+                    timestampTd.textContent = ''; // Leave blank if same as previous
+                }
+                tr.appendChild(timestampTd);
 
-    // const cpuLineUsageRows = (data.cpuLineUsage?.lines || [])
-    //         .filter(row => row.function !== '??' && row.function !== '??:0')
-    //         .map(row => ({
-    //             ...row,
-    //             timestamp: data.cpuLineUsage?.timestamp || ''
-    //         }));
+                // Total CPU Time cell
+                const totalCpuTd = document.createElement('td');
+                if (index === 0 || row.total_cpu_time !== lastTotalCpuTime) {
+                    totalCpuTd.textContent = row.total_cpu_time;
+                    lastTotalCpuTime = row.total_cpu_time;
+                    
+                } else {
+                    totalCpuTd.textContent = ''; // Leave blank if same as previous
+                }
+                tr.appendChild(totalCpuTd);
 
+                // Function, Location, Samples, Percent cells
+                ['function', 'location', 'samples', 'percent'].forEach(col => {
+                    const td = document.createElement('td');
+                    td.textContent = row[col];
+                    tr.appendChild(td);
+                });
+                
+                tbody.insertBefore(tr, tbody.firstChild);
+            });
+        }
 
-    //     // Update total CPU time and usage
-    //     const totalCpuTime = document.getElementById('totalCpuTime');
-    //     if (totalCpuTime) {
-    //         totalCpuTime.textContent = data.cpuLineUsage?.total_cpu_time || '0';
-    //     }
-    // }
-
-    // fillTable("cpuLineUsageTable", cpuLineUsageRows, ["timestamp", "function", "location", "samples", "percent"]);
 
   function renderCharts(data) {
           if (window.charts) window.charts.forEach(c => c.destroy());

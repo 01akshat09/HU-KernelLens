@@ -9,4 +9,14 @@ EMAIL_CONFIG = {
       "password": os.getenv("EMAIL_PASSWORD")
 }
 
-GO_APP_PID = 11342 # Change it according to your application PID
+GO_APP_PID = 2946 # Change it according to your application PID
+
+
+
+######################
+
+
+INFLUX_URL = os.getenv("INFLUX_URL")
+INFLUX_TOKEN = os.getenv("INFLUX_TOKEN")
+INFLUX_ORG = os.getenv("INFLUX_ORG")
+INFLUX_BUCKET = os.getenv("INFLUX_BUCKET")
