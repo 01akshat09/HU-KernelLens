@@ -4,296 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KernelLens Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 16rem;
-            background: linear-gradient(to bottom, #111827, #1f2937);
-            z-index: 40;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .sidebar-nav {
-            height: 100%;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-
-        .sidebar-link {
-            display: block;
-            padding: 0.75rem 1rem;
-            margin: 0.5rem 0;
-            border-radius: 0.375rem;
-            color: #e5e7eb;
-            transition: all 0.2s;
-        }
-
-        .sidebar-link:hover,
-        .sidebar-link.active {
-            background-color: rgba(75, 85, 99, 0.9);
-        }
-
-        .hidden-section {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.sidebar-visible {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-        }
-
-        @media (min-width: 769px) {
-            .main-content {
-                margin-left: 16rem;
-            }
-        }
-
-        .debug-panel {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            color: white;
-            z-index: 50;
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
-<body class="min-h-screen bg-gray-900">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-nav">
-            <h1 class="text-2xl font-bold text-white px-4 py-6">KernelLens</h1>
-            <nav>
-                <ul class="space-y-2">
-                    <li><a href="#" data-section="cpu" class="sidebar-link">CPU Utilization</a></li>
-                    <li><a href="#" data-section="alarms" class="sidebar-link">Threshold Alarms</a></li>
-                    <li><a href="#" data-section="user-activity" class="sidebar-link">User Activity</a></li>
-                    <li><a href="#" data-section="processes" class="sidebar-link">Process Manipulation</a></li>
-                    <li><a href="#" data-section="network" class="sidebar-link">Network Packet Transfer</a></li>
-                    <li><a href="#" data-section="profiler" class="sidebar-link">Application Profiler</a></li>
-                </ul>
-            </nav>
-        </div>
-    </aside>
-
-    <!-- Toggle Button for Mobile -->
-    <button id="toggleSidebar" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-gray-800 text-white rounded">
-        ☰
-    </button>
-
-    <!-- Main Content -->
-    <div class="main-content transition-all duration-300 p-6">
-        <h1 class="text-3xl font-bold mb-6 text-white">System Monitoring Dashboard</h1>
-
-        <!-- CPU Utilization -->
-        <section id="cpu" class="hidden-section">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">CPU Utilization Over Time</h2>
-                    <canvas id="cpuPieChart"></canvas>
-                </div>
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">CPU Time by Process</h2>
-                    <canvas id="cpuBarChart"></canvas>
-                </div>
-            </div>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
-                <h2 class="text-xl font-semibold mb-4 text-white">CPU Metrics</h2>
-                <div class="table-container">
-                    <table class="w-full table-auto">
-                        <thead>
-                            <tr class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-                                <th class="px-4 py-2">Process ID</th>
-                                <th class="px-4 py-2">Process Name</th>
-                                <th class="px-4 py-2">CPU Time (s)</th>
-                                <th class="px-4 py-2">Timestamp</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cpuTable" class="text-gray-200"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- Threshold Alarms -->
-        <section id="alarms" class="hidden-section">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">Triggered CPU Over Time</h2>
-                    <canvas id="alarmsPieChart"></canvas>
-                </div>
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">CPU % by Process</h2>
-                    <canvas id="alarmsBarChart"></canvas>
-                </div>
-            </div>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
-                <h2 class="text-xl font-semibold mb-4 text-white">Alarm Details</h2>
-                <div class="table-container">
-                    <table class="w-full table-auto">
-                        <thead>
-                            <tr class="bg-gradient-to-r from-[#ff6f61] to-[#d64191] text-white">
-                                <th class="px-4 py-2">Process ID</th>
-                                <th class="px-4 py-2">Process Name</th>
-                                <th class="px-4 py-2">CPU %</th>
-                                <th class="px-4 py-2">Threshold</th>
-                                <th class="px-4 py-2">Targeted At</th>
-                            </tr>
-                        </thead>
-                        <tbody id="alarmsTable" class="text-gray-200"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- User Activity -->
-        <section id="user-activity" class="hidden-section">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">User Actions Over Time</h2>
-                    <canvas id="userActivityPieChart"></canvas>
-                </div>
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">Actions by Process</h2>
-                    <canvas id="userActivityBarChart"></canvas>
-                </div>
-            </div>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
-                <h2 class="text-xl font-semibold mb-4 text-white">User Activity Log</h2>
-                <div class="table-container">
-                    <table class="w-full table-auto">
-                        <thead>
-                            <tr class="bg-gradient-to-r from-[#00b7eb] to-[#ff6b6b] text-white">
-                                <th class="px-4 py-2">User Action</th>
-                                <th class="px-4 py-2">Process ID</th>
-                                <th class="px-4 py-2">Time</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userActivityTable" class="text-gray-200"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- Process Manipulation -->
-        <section id="processes" class="hidden-section">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">Manipulation Count Over Time</h2>
-                    <canvas id="processPieChart"></canvas>
-                </div>
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">Actions by Process</h2>
-                    <canvas id="processBarChart"></canvas>
-                </div>
-            </div>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
-                <h2 class="text-xl font-semibold mb-4 text-white">Process Manipulation</h2>
-                <div class="table-container">
-                    <table class="w-full table-auto">
-                        <thead>
-                            <tr class="bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] text-white">
-                                <th class="px-4 py-2">User Action</th>
-                                <th class="px-4 py-2">Target Process</th>
-                                <th class="px-4 py-2">Status</th>
-                                <th class="px-4 py-2">Time</th>
-                            </tr>
-                        </thead>
-                        <tbody id="processesTable" class="text-gray-200"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- Network Packet Transfer -->
-        <section id="network" class="hidden-section">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">Packet Counts Over Time</h2>
-                    <canvas id="networkPieChart"></canvas>
-                </div>
-                <div class="bg-gray-800 p-6 rounded-lg shadow-glow chart-container">
-                    <h2 class="text-xl font-semibold mb-4 text-white">Packet Transfer Over Time</h2>
-                    <canvas id="networkBarChart"></canvas>
-                </div>
-            </div>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
-                <h2 class="text-xl font-semibold mb-4 text-white">Network Packet Details</h2>
-                <div class="table-container">
-                    <table class="w-full table-auto">
-                        <thead>
-                            <tr class="bg-gradient-to-r from-[#ff2e63] to-[#5853ff] text-white">
-                                <th class="px-4 py-2">Timestamp</th>
-                                <th class="px-4 py-2">PID</th>
-                                <th class="px-4 py-2">Command</th>
-                                <th class="px-4 py-2">SAddr</th>
-                                <th class="px-4 py-2">DAddr</th>
-                                <th class="px-4 py-2">Sport</th>
-                                <th class="px-4 py-2">Dport</th>
-                                <th class="px-4 py-2">Protocol</th>
-                                <th class="px-4 py-2">Event Type</th>
-                            </tr>
-                        </thead>
-                        <tbody id="networkTable" class="text-gray-200"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- Application Profiler -->
-        <section id="profiler" class="hidden-section">
-            <div class="bg-gray-800 p-6 rounded-lg shadow-glow">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-white">Application Profile Analysis</h2>
-                    <div class="text-white bg-blue-600 px-3 py-1 rounded">
-                        Total CPU Time: <span id="totalCpuTime">0</span>s
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full table-auto">
-                        <thead>
-                            <tr class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                                <th class="px-4 py-2">Function</th>
-                                <th class="px-4 py-2">Location</th>
-                                <th class="px-4 py-2">Samples</th>
-                                <th class="px-4 py-2">CPU %</th>
-                                <th class="px-4 py-2">Progress</th>
-                            </tr>
-                        </thead>
-                        <tbody id="profilerTable" class="text-gray-200"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+<body>
+    <div class="burger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
     </div>
-
-    <!-- Update script path to use absolute path -->
-    <script src="/static/js/dashboard.js" defer></script>
-    
-    <!-- Enable debug panel in development -->
-    <script>
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            document.getElementById('debug-panel').style.display = 'block';
-        }
-    </script>
+    <div class="sidebar" id="sidebar">
+        <ul>
+            <li onclick="showSection('cpuLineUsage')">
+                <i class="fas fa-code"></i> Application Profiling
+            </li>
+            <li onclick="showSection('userActivity')">
+                <i class="fas fa-user"></i> User Activity
+            </li>
+            <li onclick="showSection('privilegedEvents')">
+                <i class="fas fa-tasks"></i> Privileged Events
+            </li>
+            <li onclick="showSection('networkPackets')">
+                <i class="fas fa-network-wired"></i> Network Packets
+            </li>
+            <li onclick="showSection('processEvents')">
+                <i class="fas fa-ghost"></i> Zombie Process
+            </l>
+            <li onclick="showSection('cpuUtilization')">
+                <i class="fas fa-microchip"></i> CPU Utilization
+            </li>
+            <li onclick="showSection('cpuAlarms')">
+                <i class="fas fa-exclamation-triangle"></i> CPU Alarms
+            </li>
+            
+        </ul>
+    </div>
+    <div class="main-content" id="mainContent">
+        <header>KernelLens Monitoring Dashboard</header>
+        <div id="error-message" class="hidden text-red-500 text-center mb-4">
+            Failed to connect to WebSocket server or initialize monitoring. Please check the server logs.
+        </div>
+        <div id="cpuUtilization" class="table-section">
+            <h2>CPU Utilization</h2>
+            <canvas id="cpuUtilizationChart" height="100"></canvas>
+            <table id="cpuUtilizationTable">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Process ID</th>
+                        <th>Process Name</th>
+                        <th>CPU Time (s)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="cpuAlarms" class="table-section">
+            <h2>CPU Alarms</h2>
+            <canvas id="cpuAlarmsChart" height="100"></canvas>
+            <table id="cpuAlarmsTable">
+                <thead>
+                    <tr>
+                        <th>Process ID</th>
+                        <th>Process Name</th>
+                        <th>CPU Time (s)</th>
+                        <th>Threshold (s)</th>
+                        <th>Triggered At</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="userActivity" class="table-section">
+            <h2>User Activity</h2>
+            <canvas id="userActivityChart" height="100"></canvas>
+            <table id="userActivityTable">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>PID</th>
+                        <th>UID</th>
+                        <th>Command</th>
+                        <th>Suspicious</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="privilegedEvents" class="table-section">
+            <h2>Privileged Events</h2>
+            <table id="privilegedEventsTable">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>PID</th>
+                        <th>UID</th>
+                        <th>Command</th>
+                        <th>Syscall</th>
+                        <th>Filename</th>
+                        <th>Arguments</th>
+                        <th>Insight</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="networkPackets" class="table-section">
+            <h2>Network Packets</h2>
+            <canvas id="networkPacketsChart" height="100"></canvas>
+            <table id="networkPacketsTable">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>PID</th>
+                        <th>Command</th>
+                        <th>Event Type</th>
+                        <th>Source Address</th>
+                        <th>Dest Address</th>
+                        <th>Dest Port</th>
+                        <th>Protocol</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="processEvents" class="table-section">
+            <h2>Zombie Process</h2>
+            <table id="processEventsTable">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>PID</th>
+                        <th>PPID</th>
+                        <th>Command</th>
+                        <th>Activity</th>
+                        <th>Reason</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="cpuLineUsage" class="table-section active">
+            <h2>Application Profiling</h2>
+            
+            <table id="cpuLineUsageTable">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Total CPU Time</th>
+                        <th>Function</th>
+                        <th>Location</th>
+                        <th>Samples</th>
+                        <th>Percent (%)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>
-
