@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{ alarm_type }} Alert</title>
+</head>
+<body>
+<h2>{{ alarm_type }} Alert</h2>
+<p>{{ message }}</p>
+<ul>
+    {% for item in alarm_data %}
+<li>{{ item | tojson }}</li>
+    {% endfor %}
+</ul>
+</body>
+</html>

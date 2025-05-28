@@ -58,7 +58,7 @@ class CPUMonitor:
                             "pid": pid,
                             "comm": comm,
                             "cpu": round(cpu_time_sec, 4),
-                            "threshold": 1000.0,
+                            "threshold": 100.0,
                             "triggeredAt": now
                         })
                 except psutil.NoSuchProcess:
