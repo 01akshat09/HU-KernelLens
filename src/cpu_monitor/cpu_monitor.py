@@ -53,12 +53,12 @@ class CPUMonitor:
                         "cpu_time": round(cpu_time_sec, 4)
                     })
 
-                    if cpu_time_sec > 1000.0:
+                    if cpu_time_sec > 500.0:
                         self.cpu_alarms.append({
                             "pid": pid,
                             "comm": comm,
                             "cpu": round(cpu_time_sec, 4),
-                            "threshold": 100.0,
+                            "threshold": 1000.0,
                             "triggeredAt": now
                         })
                 except psutil.NoSuchProcess:

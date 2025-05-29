@@ -1,6 +1,9 @@
 import asyncio
 import websockets
 import json
+import logging
+import psutil
+import time
 from src.notifications.email import send_email_alert
 from src.notifications.teams import send_teams_alert
 
@@ -9,15 +12,6 @@ from src.notifications.teams import send_teams_alert
 # from influxdb_client import InfluxDBClient, Point, WritePrecision
 # from influxdb_client.client.write_api import SYNCHRONOUS
 # from config.settings import INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET
-
-# # Configure logging
-# logging.basicConfig(level=logging.DEBUG)
-# logger = logging.getLogger(__name__)
-
-# # InfluxDB client setup
-# influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
-# write_api = influx_client.write_api(write_options=SYNCHRONOUS)
-# query_api = influx_client.query_api()
 
 ##############################
 
@@ -42,13 +36,14 @@ def send_email_alert_limited(data, alert_type):
         logger.debug(f"Email alert suppressed for {alert_type} (sent recently)")
 
 class WebSocketServer:
-    def __init__(self, cpu_monitor, network_monitor, user_monitor, priv_monitor, process_monitor):
+    def __init__(self, cpu_monitor, network_monitor, user_monitor, priv_monitor, process_monitor, cpu_line_monitor=None):
         self.connected_clients = set()
         self.cpu_monitor = cpu_monitor
         self.network_monitor = network_monitor
         self.user_monitor = user_monitor
         self.priv_monitor = priv_monitor
         self.process_monitor = process_monitor
+        self.cpu_line_monitor = cpu_line_monitor
 
     async def handler(self, websocket):
         """Handle WebSocket client connections."""
@@ -61,6 +56,14 @@ class WebSocketServer:
                 # self.priv_monitor.collect_data()
                 # self.user_monitor.collect_data()
                 # self.priv_monitor.collect_data()
+                if self.cpu_line_monitor:
+                    if not psutil.pid_exists(self.cpu_line_monitor.pid):
+                        logger.error(f"PID {self.cpu_line_monitor.pid} no longer exists")
+                        self.cpu_line_monitor = None
+                    else:
+                        self.cpu_line_monitor.collect_data()
+                else:
+                    logger.warning("cpu_line_monitor is None, skipping data collection")
                 data = {
                     "cpuUtilization": self.cpu_monitor.cpu_data,
                     "cpuAlarms": self.cpu_monitor.cpu_alarms,
@@ -86,21 +89,19 @@ class WebSocketServer:
                 logger.debug(f"Raw user activity: {current_user_activity}")
                 suspicious_user_activities = [
                     event for event in current_user_activity 
-                    if str(event.get("suspicious")).lower() == "true"  # Convert to string and compare
+                    if str(event.get("suspicious")).lower() == "true"
                 ]
-                
                 if suspicious_user_activities:
                     logger.info(f"Filtered suspicious activities: {suspicious_user_activities}")
                     send_email_alert(suspicious_user_activities, "User Activity")
                     await send_teams_alert(suspicious_user_activities, "User Activity")
                 
                 if data["privilegedEvents"]:
-                    # Filter privileged events for non-root users and execve from /tmp
                     privileged_alerts = [
                         event for event in data["privilegedEvents"]
-                        if (event.get("uid", 0) != 0) or  # non-root users
-                           (event.get("syscall") == "execve" and  # execve syscall
-                            str(event.get("filename", "")).startswith("/tmp/"))  # from /tmp
+                        if (event.get("uid", 0) != 0) or
+                           (event.get("syscall") == "execve" and
+                            str(event.get("filename", "")).startswith("/tmp/"))
                     ]
                     if privileged_alerts:
                         logger.info(f"Filtered privileged events: {privileged_alerts}")
@@ -108,9 +109,8 @@ class WebSocketServer:
                         await send_teams_alert(privileged_alerts, "Privileged Process")
 
                 # Send data
-
                 await websocket.send(json.dumps(data))
-                await asyncio.sleep(5)
+                await asyncio.sleep(1)
         except websockets.exceptions.ConnectionClosed:
             print(f"❌ Client disconnected: {websocket.remote_address}")
         finally:
@@ -134,13 +134,30 @@ async def start_websocket_server():
     from src.user_monitor.user_monitor import init_user_monitor
     from src.priv_monitor.priv_monitor import init_priv_monitor
     from src.process_monitor.process_monitor import init_process_monitor
+    from src.cpu_line_monitor.cpu_line_monitor import init_cpu_line_monitor
+    from config.settings import GO_APP_PID
+
+    logger.info(f"Starting WebSocket server with GO_APP_PID: {GO_APP_PID}")
+    if not psutil.pid_exists(GO_APP_PID):
+        logger.error(f"PID {GO_APP_PID} does not exist")
+    
+    await asyncio.sleep(2)  # Wait for Go app to start
+    logger.info("Waited 2s for Go application to initialize")
 
     cpu_monitor = init_cpu_monitor()
     network_monitor = init_network_monitor()
     user_monitor = init_user_monitor()
     priv_monitor = init_priv_monitor()
     process_monitor = init_process_monitor()
+    cpu_line_monitor = None
+    try:
+        if GO_APP_PID > 0 and psutil.pid_exists(GO_APP_PID):
+            cpu_line_monitor = init_cpu_line_monitor(GO_APP_PID)
+            print(f"CPU line monitoring started for PID {GO_APP_PID}")
+        else:
+            logger.error("No valid Go application PID in settings.py or PID not running")
+    except Exception as e:
+        logger.error(f"Error initializing CPU line monitor: {e}")
 
-    server = WebSocketServer(cpu_monitor, network_monitor, user_monitor, priv_monitor, process_monitor)
+    server = WebSocketServer(cpu_monitor, network_monitor, user_monitor, priv_monitor, process_monitor, cpu_line_monitor)
     await server.run()
-
