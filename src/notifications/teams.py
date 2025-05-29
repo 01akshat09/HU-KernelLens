@@ -4,7 +4,7 @@ from jinja2 import Template
 
 logger = logging.getLogger(__name__)
 
-TEAMS_WEBHOOK_URL = "https://deloitte.webhook.office.com/webhookb2/2167f14b-de5d-4c1f-96bb-3507f5cb8a0e@36da45f1-dd2c-4d1f-af13-5abe46b99921/IncomingWebhook/63f04c1588f34792ba3f3146f805f054/08fed489-9e16-4170-929b-19df7e99159d/V20Jyu23Ej-l_g4qO4pngheHa-yWGa3MhojrUFhxW_4QY1"
+TEAMS_WEBHOOK_URL= "https://deloitte.webhook.office.com/webhookb2/d8b0550a-d43c-4000-8ce2-93d2010adf6c@36da45f1-dd2c-4d1f-af13-5abe46b99921/IncomingWebhook/60af043c1b75420d8eb493a4c39ea838/08fed489-9e16-4170-929b-19df7e99159d/V2ulfuB6BTY3A2RIQgY7RD9WNd02SXZkecz8uLWH6neRE1"
 
 async def send_teams_alert(alarm_data, alarm_type):
     """Send a Teams alert using webhook."""
